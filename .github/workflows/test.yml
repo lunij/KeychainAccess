@@ -1,0 +1,31 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: macos-12
+    name: Test
+    steps:
+      - name: Configure Xcode
+        run: |
+          xcodebuild -version
+          ls -nt /Applications/ | grep "Xcode*"
+          # Set Xcode version explicitly when needed only
+          # sudo xcode-select -s /Applications/Xcode_x.y.app
+      - uses: actions/checkout@v3
+      - name: Test
+        run: |
+          xcodebuild test -workspace KeychainAccess.xcworkspace -scheme KeychainAccess -destination 'platform=iOS Simulator,OS=15.0,name=iPhone 13 mini' -resultBundlePath results.xcresult
+      - uses: kishikawakatsumi/xcresulttool@main
+        with:
+          xcresult: "results.xcresult"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          title: "KeychainAccess test report"
+        if: always()
